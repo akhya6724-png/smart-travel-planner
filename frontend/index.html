@@ -1,0 +1,3516 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Smart Traveler Planner — Final</title>
+
+<!-- FontAwesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<!-- Leaflet Map -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+  :root{
+    --accent:#ffcc33;
+    --blue:#2f6df6;
+    --muted:#f6f8ff;
+    --card:#ffffff;
+  }
+
+  *{
+    box-sizing:border-box;
+  }
+
+  body{
+    margin:0;
+    font-family:'Poppins',system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+    background:#f3f6ff;
+    color:#0b1530;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  header.topbar{
+    background:linear-gradient(180deg,var(--blue),#2a5fe3);
+    color:white;
+    padding:28px 20px;
+    border-bottom-left-radius:22px;
+    border-bottom-right-radius:22px;
+    box-shadow:0 6px 24px rgba(47,109,246,0.12);
+    position:sticky;
+    top:0;
+    z-index:40;
+  }
+
+  .topbar .wrap{
+    max-width:1100px;
+    margin:0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+
+  .brand .logo{
+    width:56px;
+    height:56px;
+    border-radius:12px;
+    background:linear-gradient(135deg,#fff2b0,#ffd54a);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#0b1530;
+    font-weight:800;
+    font-size:18px;
+  }
+
+  .brand h1{
+    font-size:20px;
+    margin:0;
+    font-weight:700;
+  }
+
+  .brand p{
+    margin:0;
+    font-size:13px;
+    opacity:0.95;
+  }
+
+  nav.topnav{
+    display:flex;
+    gap:10px;
+    align-items:center;
+  }
+
+  nav.topnav a{
+    color:white;
+    text-decoration:none;
+    padding:8px 12px;
+    border-radius:8px;
+    font-weight:600;
+    opacity:0.95;
+  }
+
+  nav.topnav a:hover{
+    background:rgba(255,255,255,0.08);
+  }
+
+  .container{
+    max-width:1100px;
+    margin:18px auto;
+    padding:0 18px;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:14px;
+  }
+
+  .card{
+    background:var(--card);
+    border-radius:12px;
+    padding:14px;
+    box-shadow:0 6px 20px rgba(15,30,60,0.04);
+    border:1px solid rgba(15,30,60,0.03);
+  }
+
+  h2{
+    margin:0 0 12px 0;
+  }
+
+  .small{
+    font-size:13px;
+    color:#556080;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="date"],
+  input[type="number"],
+  select,
+  textarea{
+    width:100%;
+    padding:10px;
+    border-radius:8px;
+    border:1px solid #e6eefc;
+    margin-top:8px;
+    font-size:14px;
+    background:#fbfdff;
+  }
+
+  textarea{
+    min-height:90px;
+    resize:vertical;
+  }
+
+  .btn{
+    background:var(--accent);
+    color:#000;
+    border:none;
+    padding:10px 14px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:700;
+  }
+
+  .btn:hover{
+    opacity:0.9;
+  }
+
+  .btn.secondary{
+    background:#f0f4ff;
+    color:#0b1530;
+  }
+
+  .row{
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+
+  .row .btn{
+    flex:0;
+  }
+
+  .page{
+    display:none;
+    padding:20px 0 60px 0;
+    min-height:60vh;
+  }
+
+  .page.show{
+    display:block;
+  }
+
+  .tripCard{
+    background:#f8fbff;
+    padding:12px;
+    border-radius:10px;
+    margin-bottom:10px;
+    border:1px solid #eef4ff;
+  }
+
+  .imgthumb{
+    width:100%;
+    max-width:240px;
+    border-radius:8px;
+    margin-top:8px;
+  }
+
+  .note{
+    font-size:13px;
+    color:#556080;
+  }
+
+  .resultBox{
+    background:#fbfdff;
+    padding:10px;
+    border-radius:8px;
+    border:1px solid #eef4ff;
+    margin-top:8px;
+    color:#112;
+  }
+
+  .chatWindow{
+    height:240px;
+    overflow:auto;
+    padding:10px;
+    background:#fbfbff;
+    border-radius:8px;
+    border:1px solid #eef4ff;
+    margin-bottom:8px;
+  }
+
+  .msg{
+    padding:8px;
+    border-radius:8px;
+    margin-bottom:8px;
+  }
+
+  .aiUser{
+    background:#e9f0ff;
+    color:#0b1530;
+    text-align:right;
+  }
+
+  .aiBot{
+    background:#fff5d6;
+    color:#0b1530;
+  }
+
+  #weatherMap{
+    width:100%;
+    min-height:0;
+    border-radius:10px;
+    overflow:hidden;
+  }
+
+  footer{
+    max-width:1100px;
+    margin:30px auto;
+    padding:20px;
+    text-align:center;
+    color:#6b7aa6;
+    font-size:13px;
+  }
+
+  @media (max-width:720px){
+
+    .topbar .wrap{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+
+    nav.topnav{
+      width:100%;
+      overflow-x:auto;
+      flex-wrap:wrap;
+    }
+
+    .brand h1{
+      font-size:16px;
+    }
+
+    .container{
+      padding:0 12px;
+    }
+
+    .row{
+      flex-direction:column;
+      align-items:stretch;
+    }
+
+    .row .btn{
+      width:100%;
+    }
+  }
+</style>
+</head>
+
+<body>
+
+<!-- =========================
+     TOP BAR
+========================= -->
+
+<header class="topbar">
+  <div class="wrap">
+
+    <div class="brand">
+      <div class="logo">ST</div>
+
+      <div>
+        <h1>Smart Traveler Planner</h1>
+        <p class="small">
+          Plan. Track. Revisit. — All-in-one hackathon ready
+        </p>
+      </div>
+    </div>
+
+    <nav class="topnav" aria-label="Main navigation">
+      <a href="#homePage">Home</a>
+      <a href="#plannerPage">Planner</a>
+      <a href="#featuresPage">Features</a>
+      <a href="#guidePage">Guide</a>
+      <a href="#bookingPage">Booking</a>
+      <a href="#profilePage">Profile</a>
+    </nav>
+
+  </div>
+</header>
+
+
+<!-- =========================
+     MAIN
+========================= -->
+
+<main class="container">
+
+
+<!-- =========================
+     HOME
+========================= -->
+
+<section id="homePage" class="page show">
+
+  <div class="grid">
+
+    <div class="card"
+         style="grid-column:1 / -1;display:flex;gap:12px;align-items:center">
+
+      <div style="flex:1">
+
+        <h2>Welcome back!</h2>
+
+        <p class="small">
+          Your dashboard: trips, bookings, AI help,
+          safety checks, and emergency tools — all in one place.
+        </p>
+
+        <div style="margin-top:12px">
+
+          <a class="btn" href="#plannerPage">
+            Open Planner
+          </a>
+
+          <a class="btn secondary"
+             href="#featuresPage"
+             style="margin-left:8px">
+            Explore Features
+          </a>
+
+        </div>
+
+      </div>
+
+      <img
+        src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=520"
+        style="width:240px;border-radius:10px"
+        alt="Travel landscape">
+
+    </div>
+
+
+    <div class="card">
+
+      <h3>Quick Stats</h3>
+
+      <div id="quickStats"
+           class="resultBox small">
+        Loading...
+      </div>
+
+    </div>
+
+
+    <div class="card">
+
+      <h3>Recent Trips</h3>
+
+      <div id="recentTrips"
+           class="resultBox small">
+        No trips yet.
+      </div>
+
+    </div>
+
+
+    <div class="card">
+
+      <h3>Shortcuts</h3>
+
+      <div style="display:flex;flex-direction:column;gap:8px">
+
+        <a class="btn" href="#bookingPage">
+          Book a Hotel
+        </a>
+
+        <a class="btn secondary" href="#featuresPage">
+          Check Weather
+        </a>
+
+        <a class="btn" href="#profilePage">
+          Edit Profile
+        </a>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     PLANNER
+========================= -->
+
+<section id="plannerPage" class="page">
+
+  <h2>Planner — Personal Travel History</h2>
+
+  <div class="grid">
+
+    <div class="card">
+
+      <h3>Add Trip</h3>
+
+      <p class="small">
+        Fill trip details and upload a photo (optional).
+      </p>
+
+      <input
+        id="city"
+        type="text"
+        placeholder="City name">
+
+      <input
+        id="date"
+        type="date">
+
+      <input
+        id="highlight"
+        type="text"
+        placeholder="Highlight (short)">
+
+      <input
+        id="rating"
+        type="number"
+        min="1"
+        max="5"
+        placeholder="Rating 1-5">
+
+      <input
+        id="photoFile"
+        type="file"
+        accept="image/*">
+
+      <div class="row" style="margin-top:8px">
+
+        <button
+          id="saveTrip"
+          class="btn">
+          Save Trip
+        </button>
+
+        <button
+          id="clearForm"
+          class="btn secondary">
+          Clear
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <div class="card">
+
+      <h3>Saved Trips</h3>
+
+      <div
+        id="historyList"
+        class="resultBox small">
+        No trips yet.
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     FEATURES
+========================= -->
+
+<section id="featuresPage" class="page">
+
+  <h2>Features</h2>
+
+  <p class="small">
+    Itinerary, Budget, Weather with Map, Live Tracker,
+    Document Vault, Packing Assistant, Safety Score,
+    AI Assistance.
+  </p>
+
+
+  <div class="grid" style="margin-top:12px">
+
+
+    <!-- ITINERARY -->
+
+    <div class="card">
+
+      <h3>
+        <i class="fa-solid fa-route"></i>
+        Itinerary Generator
+      </h3>
+
+      <input
+        id="it_city"
+        type="text"
+        placeholder="City (e.g. Jaipur)">
+
+      <input
+        id="it_days"
+        type="number"
+        min="1"
+        max="14"
+        placeholder="Days">
+
+      <div class="row">
+
+        <button
+          id="genItinerary"
+          class="btn">
+          Generate
+        </button>
+
+        <button
+          id="copyIt"
+          class="btn secondary">
+          Copy
+        </button>
+
+      </div>
+
+      <div
+        id="itineraryResult"
+        class="resultBox small">
+      </div>
+
+    </div>
+
+
+    <!-- BUDGET -->
+
+    <div class="card">
+
+      <h3>
+        <i class="fa-solid fa-wallet"></i>
+        Budget Planner
+      </h3>
+
+      <input
+        id="bp_city"
+        type="text"
+        placeholder="City (optional)">
+
+      <input
+        id="bp_days"
+        type="number"
+        min="1"
+        max="60"
+        placeholder="Days">
+
+      <select id="bp_style">
+
+        <option value="budget">
+          Budget
+        </option>
+
+        <option value="standard" selected>
+          Standard
+        </option>
+
+        <option value="luxury">
+          Luxury
+        </option>
+
+      </select>
+
+      <div style="margin-top:8px">
+
+        <button
+          id="calcBudget"
+          class="btn">
+          Calculate
+        </button>
+
+      </div>
+
+      <div
+        id="budgetResult"
+        class="resultBox small">
+        No estimate yet.
+      </div>
+
+    </div>
+
+
+    <!-- WEATHER -->
+
+    <div class="card">
+
+      <h3>
+        <i class="fa-solid fa-cloud-sun"></i>
+        Weather & Map
+      </h3>
+
+      <input
+        id="w_city"
+        type="text"
+        placeholder="City (e.g. New Delhi)">
+
+      <div class="row">
+
+        <button
+          id="getWeather"
+          class="btn">
+          Get Weather
+        </button>
+
+        <button
+          id="showMapBtn"
+          class="btn secondary">
+          Open in Maps
+        </button>
+
+      </div>
+
+      <div
+        id="weatherResult"
+        class="resultBox small">
+        No weather yet.
+      </div>
+
+      <div
+        id="weatherMap"
+        style="margin-top:8px">
+      </div>
+
+    </div>
+
+
+    <!-- LIVE TRACKER -->
+
+    <div class="card">
+
+      <h3>
+        <i class="fa-solid fa-location-crosshairs"></i>
+        Live Tracker
+      </h3>
+
+      <div class="row">
+
+        <button
+          id="startTrack"
+          class="btn">
+          Start Tracker
+        </button>
+
+        <button
+          id="stopTrack"
+          class="btn secondary">
+          Stop Tracker
+        </button>
+
+      </div>
+
+      <div
+        id="trackerStatus"
+        class="resultBox small">
+        Tracker stopped.
+      </div>
+
+    </div>
+
+
+    <!-- DOCUMENT VAULT -->
+
+    <div class="card">
+
+      <h3>
+        <i class="fa-solid fa-folder-open"></i>
+        Document Vault
+      </h3>
+
+      <input
+        id="docUpload"
+        type="file"
+        accept="image/*,application/pdf">
+
+      <div
+        id="docsList"
+        class="resultBox small">
+        No documents.
+      </div>
+
+    </div>
+
+
+    <!-- PACKING -->
+
+    <div class="card">
+
+      <h3>
+        <i class="fa-solid fa-suitcase-rolling"></i>
+        Packing Assistant
+      </h3>
+
+      <input
+        id="pack_days"
+        type="number"
+        min="1"
+        max="60"
+        placeholder="Days">
+
+      <div class="row">
+
+        <button
+          id="getPacking"
+          class="btn">
+          Get Packing List
+        </button>
+
+        <button
+          id="clearPacking"
+          class="btn secondary">
+          Clear
+        </button>
+
+      </div>
+
+      <div
+        id="packingResult"
+        class="resultBox small">
+        No suggestions yet.
+      </div>
+
+    </div>
+
+
+    <!-- SAFETY -->
+
+    <div class="card">
+
+      <h3>
+        <i class="fa-solid fa-shield-halved"></i>
+        Safety Score
+      </h3>
+
+      <input
+        id="s_city"
+        type="text"
+        placeholder="City (e.g. Mumbai)">
+
+      <div style="margin-top:8px">
+
+        <button
+          id="calcSafety"
+          class="btn">
+          Check Safety
+        </button>
+
+      </div>
+
+      <div
+        id="safetyResult"
+        class="resultBox small">
+        No data yet.
+      </div>
+
+    </div>
+
+
+    <!-- AI ASSISTANCE -->
+
+    <div class="card">
+
+      <h3>
+        <i class="fa-solid fa-robot"></i>
+        AI Assistance
+      </h3>
+
+      <div
+        id="chatWindow"
+        class="chatWindow">
+      </div>
+
+      <div class="row">
+
+        <input
+          id="chatInput"
+          type="text"
+          placeholder="Ask: packing / itinerary / budget / hotel / safety"
+          style="flex:1">
+
+        <button
+          id="sendChat"
+          class="btn">
+          Send
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     GUIDE / CAREERS
+========================= -->
+
+<section id="guidePage" class="page">
+
+  <h2>Guide / Careers</h2>
+
+  <div class="grid">
+
+
+    <div class="card">
+
+      <h3>Post a Job — Hire Travelers</h3>
+
+      <input
+        id="hireTitle"
+        type="text"
+        placeholder="Job title">
+
+      <textarea
+        id="hireDesc"
+        placeholder="Job description">
+      </textarea>
+
+      <div style="margin-top:8px">
+
+        <button
+          id="postHire"
+          class="btn">
+          Post Job
+        </button>
+
+      </div>
+
+      <div
+        id="hireList"
+        class="resultBox small">
+        No jobs posted yet.
+      </div>
+
+    </div>
+
+
+    <div class="card">
+
+      <h3>Apply for Jobs</h3>
+
+      <input
+        id="applyName"
+        type="text"
+        placeholder="Your name">
+
+      <input
+        id="applyJob"
+        type="text"
+        placeholder="Job title">
+
+      <div style="margin-top:8px">
+
+        <button
+          id="applyBtn"
+          class="btn">
+          Apply
+        </button>
+
+      </div>
+
+      <div
+        id="applyList"
+        class="resultBox small">
+        No applications yet.
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     BOOKING
+========================= -->
+
+<section id="bookingPage" class="page">
+
+  <h2>Booking (House / Hotel / Flight / Cab)</h2>
+
+  <div class="grid">
+
+
+    <!-- HOUSES -->
+
+    <div class="card">
+
+      <h3>House Rentals</h3>
+
+      <div
+        id="houseList"
+        class="resultBox small">
+        Loading houses...
+      </div>
+
+    </div>
+
+
+    <!-- HOTELS -->
+
+    <div class="card">
+
+      <h3>Hotels</h3>
+
+      <div
+        id="hotelList"
+        class="resultBox small">
+        Loading hotels...
+      </div>
+
+    </div>
+
+
+    <!-- FLIGHTS -->
+
+    <div class="card">
+
+      <h3>Flights</h3>
+
+      <div
+        id="flightList"
+        class="resultBox small">
+        Loading flights...
+      </div>
+
+    </div>
+
+
+    <!-- CAB -->
+
+    <div class="card">
+
+      <h3>Cab / Transport</h3>
+
+      <input
+        id="cabPickup"
+        type="text"
+        placeholder="Pickup location">
+
+      <input
+        id="cabDrop"
+        type="text"
+        placeholder="Drop location">
+
+      <select id="cabType">
+
+        <option>Cab</option>
+        <option>Bus</option>
+        <option>Bike</option>
+        <option>Auto</option>
+
+      </select>
+
+      <div style="margin-top:8px">
+
+        <button
+          id="bookCab"
+          class="btn">
+          Book
+        </button>
+
+      </div>
+
+      <div
+        id="cabResult"
+        class="resultBox small">
+      </div>
+
+    </div>
+
+
+    <!-- EMERGENCY -->
+
+    <div class="card">
+
+      <h3>Emergency</h3>
+
+      <input
+        id="emergencyNumber"
+        type="text"
+        placeholder="Enter number or use preset">
+
+      <select
+        id="presetEmergency"
+        style="margin-top:8px">
+
+        <option value="">
+          Select preset
+        </option>
+
+        <option value="100">
+          Police — 100
+        </option>
+
+        <option value="102">
+          Ambulance — 102
+        </option>
+
+        <option value="101">
+          Fire — 101
+        </option>
+
+        <option value="1363">
+          Tourist Helpline — 1363
+        </option>
+
+      </select>
+
+      <div class="row" style="margin-top:8px">
+
+        <button
+          id="callBtn"
+          class="btn">
+          Call
+        </button>
+
+        <button
+          id="msgBtn"
+          class="btn secondary">
+          Message
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================
+     PROFILE
+========================= -->
+
+<section id="profilePage" class="page">
+
+  <h2>Profile</h2>
+
+  <div
+    class="card"
+    style="display:flex;gap:14px;align-items:center">
+
+    <div style="width:120px">
+
+      <img
+        id="profilePic"
+        src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=120"
+        style="width:120px;height:120px;object-fit:cover;border-radius:12px"
+        alt="profile">
+
+    </div>
+
+    <div style="flex:1">
+
+      <input
+        id="profileName"
+        type="text"
+        placeholder="Name">
+
+      <input
+        id="profileEmail"
+        type="email"
+        placeholder="Email">
+
+      <input
+        id="profileFile"
+        type="file"
+        accept="image/*"
+        style="margin-top:8px">
+
+      <div style="margin-top:8px">
+
+        <button
+          id="saveProfile"
+          class="btn">
+          Save Profile
+        </button>
+
+      </div>
+
+      <div
+        id="profileInfo"
+        class="note"
+        style="margin-top:8px">
+        No profile saved.
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+</main>
+
+
+<!-- =========================
+     FOOTER
+========================= -->
+
+<footer>
+  SmartTraveler — Hackathon ready • All features included
+</footer>
+
+
+<!-- =========================
+     JAVASCRIPT
+========================= -->
+
+<script>
+
+/* =========================================================
+   STORAGE
+========================================================= */
+
+const STORE_KEY = 'smart_traveler_final_v2';
+
+let store = JSON.parse(
+  localStorage.getItem(STORE_KEY) || '{}'
+);
+
+if(!store.trips) store.trips = [];
+if(!store.docs) store.docs = [];
+if(!store.jobs) store.jobs = [];
+if(!store.applications) store.applications = [];
+if(!store.bookings) store.bookings = {};
+if(!store.profile) store.profile = {};
+if(!store.safety) store.safety = {};
+
+function saveStore(){
+  localStorage.setItem(
+    STORE_KEY,
+    JSON.stringify(store)
+  );
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+document
+  .querySelectorAll('a[href^="#"]')
+  .forEach(a => {
+
+    a.addEventListener('click', e => {
+
+      const target = a.getAttribute('href');
+
+      if(!target || target === '#'){
+        return;
+      }
+
+      e.preventDefault();
+
+      document
+        .querySelectorAll('.page')
+        .forEach(p => {
+          p.classList.remove('show');
+        });
+
+      const page =
+        document.querySelector(target);
+
+      if(page){
+        page.classList.add('show');
+      }
+
+      window.scrollTo({
+        top:0,
+        behavior:'smooth'
+      });
+
+      if(target === '#homePage'){
+        renderHomeQuick();
+      }
+
+    });
+
+  });
+
+
+/* =========================================================
+   HOME QUICK STATS
+========================================================= */
+
+function renderHomeQuick(){
+
+  const stats =
+    document.getElementById('quickStats');
+
+  const total =
+    store.trips.length;
+
+  stats.innerHTML = `
+    Trips: <strong>${total}</strong>
+    · Documents: <strong>${store.docs.length}</strong>
+    · Jobs: <strong>${store.jobs.length}</strong>
+  `;
+
+
+  const recent =
+    document.getElementById('recentTrips');
+
+  recent.innerHTML = '';
+
+
+  if(store.trips.length === 0){
+
+    recent.innerText =
+      'No trips yet.';
+
+  }
+
+
+  store.trips
+    .slice()
+    .reverse()
+    .slice(0,3)
+    .forEach(t => {
+
+      const d =
+        document.createElement('div');
+
+      d.className = 'note';
+
+      d.innerHTML = `
+        <strong>${t.city}</strong>
+        · ${t.date}
+        · ${'⭐'.repeat(t.rating || 0)}
+        <div class="small">
+          ${t.highlight || ''}
+        </div>
+      `;
+
+      if(t.photo){
+
+        d.innerHTML += `
+          <div>
+            <img
+              src="${t.photo}"
+              style="width:180px;border-radius:8px;margin-top:8px">
+          </div>
+        `;
+
+      }
+
+      recent.appendChild(d);
+
+    });
+
+}
+
+
+/* =========================================================
+   BOOKING DATA
+========================================================= */
+
+function seedBookings(){
+
+  if(
+    store.bookings &&
+    store.bookings.houses
+  ){
+    return;
+  }
+
+
+  store.bookings = {
+
+    houses:[
+
+      {
+        id:'H-A',
+        name:'Sunny Apartment',
+        cost:2500,
+        rating:4.5,
+        distance:2,
+        photo:
+        'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800'
+      },
+
+      {
+        id:'H-B',
+        name:'Cozy Cottage',
+        cost:1800,
+        rating:4.2,
+        distance:4,
+        photo:
+        'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=800'
+      },
+
+      {
+        id:'H-C',
+        name:'City Studio',
+        cost:3200,
+        rating:4.8,
+        distance:1,
+        photo:
+        'https://images.unsplash.com/photo-1542317854-ff2f3d9c4a7a?w=800'
+      }
+
+    ],
+
+
+    hotels:[
+
+      {
+        id:'HT-1',
+        name:'Hotel Luxe',
+        cost:4500,
+        rating:4.7,
+        distance:2,
+        photo:
+        'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800'
+      },
+
+      {
+        id:'HT-2',
+        name:'Comfort Inn',
+        cost:2200,
+        rating:4.1,
+        distance:3,
+        photo:
+        'https://images.unsplash.com/photo-1501117716987-c8e1ecb0b8f4?w=800'
+      },
+
+      {
+        id:'HT-3',
+        name:'Budget Stay',
+        cost:1200,
+        rating:3.8,
+        distance:5,
+        photo:
+        'https://images.unsplash.com/photo-1560448204-5822c3c7b2c6?w=800'
+      }
+
+    ],
+
+
+    flights:[
+
+      {
+        id:'F-101',
+        name:'Flight 101',
+        cost:5000,
+        duration:'2h 10m'
+      },
+
+      {
+        id:'F-202',
+        name:'Flight 202',
+        cost:7500,
+        duration:'3h 5m'
+      },
+
+      {
+        id:'F-303',
+        name:'Flight 303',
+        cost:12000,
+        duration:'5h 30m'
+      }
+
+    ]
+
+  };
+
+  saveStore();
+
+}
+
+seedBookings();
+
+
+/* =========================================================
+   RENDER BOOKINGS
+========================================================= */
+
+function renderBooking(){
+
+  /* HOUSES */
+
+  const hbox =
+    document.getElementById('houseList');
+
+  hbox.innerHTML = '';
+
+
+  store.bookings.houses.forEach(h => {
+
+    const div =
+      document.createElement('div');
+
+    div.className = 'note';
+
+    div.innerHTML = `
+
+      <strong>${h.name}</strong>
+      <br>
+
+      Cost: ₹${h.cost}/night
+      · Rating: ${h.rating}/5
+      · Distance: ${h.distance} km
+
+      <br>
+
+      <img
+        src="${h.photo}"
+        class="imgthumb">
+
+      <br>
+
+      <input
+        type="number"
+        placeholder="Your price"
+        id="housePrice_${h.id}"
+        style="width:48%;margin-top:8px;padding:8px;border-radius:8px;border:1px solid #eaeefc">
+
+      <button
+        class="btn"
+        style="margin-left:6px;margin-top:8px"
+        onclick="(function(){
+
+          const v =
+            document.getElementById('housePrice_${h.id}').value ||
+            ${h.cost};
+
+          alert(
+            'Requested booking for ${h.name} at ₹' + v
+          );
+
+        })()">
+
+        Book
+
+      </button>
+    `;
+
+    hbox.appendChild(div);
+
+  });
+
+
+  /* HOTELS */
+
+  const hlist =
+    document.getElementById('hotelList');
+
+  hlist.innerHTML = '';
+
+
+  store.bookings.hotels.forEach(h => {
+
+    const div =
+      document.createElement('div');
+
+    div.className = 'note';
+
+    div.innerHTML = `
+
+      <strong>${h.name}</strong>
+      <br>
+
+      Cost: ₹${h.cost}/night
+      · Rating: ${h.rating}/5
+      · Distance: ${h.distance} km
+
+      <br>
+
+      <img
+        src="${h.photo}"
+        class="imgthumb">
+
+      <br>
+
+      <input
+        type="number"
+        placeholder="Your price"
+        id="hotelPrice_${h.id}"
+        style="width:48%;margin-top:8px;padding:8px;border-radius:8px;border:1px solid #eaeefc">
+
+      <button
+        class="btn"
+        style="margin-left:6px;margin-top:8px"
+        onclick="(function(){
+
+          const v =
+            document.getElementById('hotelPrice_${h.id}').value ||
+            ${h.cost};
+
+          alert(
+            'Requested hotel booking for ${h.name} at ₹' + v
+          );
+
+        })()">
+
+        Book
+
+      </button>
+    `;
+
+    hlist.appendChild(div);
+
+  });
+
+
+  /* FLIGHTS */
+
+  const flist =
+    document.getElementById('flightList');
+
+  flist.innerHTML = '';
+
+
+  store.bookings.flights.forEach(f => {
+
+    const div =
+      document.createElement('div');
+
+    div.className = 'note';
+
+    div.innerHTML = `
+
+      <strong>${f.name}</strong>
+      · ₹${f.cost}
+      · ${f.duration}
+
+      <button
+        class="btn"
+        style="margin-left:8px"
+        onclick="alert('Booked ${f.name}')">
+
+        Book
+
+      </button>
+    `;
+
+    flist.appendChild(div);
+
+  });
+
+}
+
+renderBooking();
+
+
+/* =========================================================
+   CAB BOOKING
+========================================================= */
+
+document
+  .getElementById('bookCab')
+  .addEventListener('click', () => {
+
+    const pick =
+      document
+        .getElementById('cabPickup')
+        .value
+        .trim();
+
+    const drop =
+      document
+        .getElementById('cabDrop')
+        .value
+        .trim();
+
+    const type =
+      document
+        .getElementById('cabType')
+        .value;
+
+
+    if(!pick || !drop){
+
+      alert(
+        'Enter pickup & drop'
+      );
+
+      return;
+    }
+
+
+    const base = 200;
+
+    const mult =
+      type === 'Bus'
+        ? 0.6
+        : type === 'Bike'
+        ? 0.4
+        : type === 'Auto'
+        ? 0.5
+        : 1;
+
+
+    const cost =
+      Math.round(base * mult);
+
+
+    document
+      .getElementById('cabResult')
+      .innerText =
+      `${type} booked from ${pick} to ${drop} — Estimated: ₹${cost}`;
+
+  });
+
+
+/* =========================================================
+   EMERGENCY
+========================================================= */
+
+document
+  .getElementById('presetEmergency')
+  .addEventListener('change', e => {
+
+    if(e.target.value){
+
+      document
+        .getElementById('emergencyNumber')
+        .value =
+        e.target.value;
+
+    }
+
+  });
+
+
+document
+  .getElementById('callBtn')
+  .addEventListener('click', () => {
+
+    const num =
+      document
+        .getElementById('emergencyNumber')
+        .value
+        .trim();
+
+    if(!num){
+
+      alert('Enter number');
+
+      return;
+    }
+
+    window.location.href =
+      `tel:${num}`;
+
+  });
+
+
+document
+  .getElementById('msgBtn')
+  .addEventListener('click', () => {
+
+    const num =
+      document
+        .getElementById('emergencyNumber')
+        .value
+        .trim();
+
+    if(!num){
+
+      alert('Enter number');
+
+      return;
+    }
+
+    window.location.href =
+      `sms:${num}`;
+
+  });
+
+
+/* =========================================================
+   TRAVEL HISTORY
+========================================================= */
+
+function renderTrips(){
+
+  const h =
+    document.getElementById('historyList');
+
+  h.innerHTML = '';
+
+
+  if(store.trips.length === 0){
+
+    h.innerHTML =
+      '<div class="small">No trips yet.</div>';
+
+    return;
+  }
+
+
+  store.trips
+    .slice()
+    .reverse()
+    .forEach(t => {
+
+      const div =
+        document.createElement('div');
+
+      div.className =
+        'tripCard';
+
+      div.innerHTML = `
+
+        <strong>${t.city}</strong>
+        · ${t.date}
+        · ${'⭐'.repeat(t.rating || 0)}
+
+        <div class="small">
+          ${t.highlight || ''}
+        </div>
+      `;
+
+
+      if(t.photo){
+
+        div.innerHTML += `
+
+          <div>
+            <img
+              src="${t.photo}"
+              class="imgthumb">
+          </div>
+
+        `;
+
+      }
+
+
+      h.appendChild(div);
+
+    });
+
+
+  renderHomeQuick();
+
+}
+
+
+document
+  .getElementById('saveTrip')
+  .addEventListener('click', () => {
+
+    const city =
+      document
+        .getElementById('city')
+        .value
+        .trim();
+
+    const date =
+      document
+        .getElementById('date')
+        .value;
+
+    const highlight =
+      document
+        .getElementById('highlight')
+        .value
+        .trim();
+
+    const rating =
+      Number(
+        document
+          .getElementById('rating')
+          .value
+      ) || 0;
+
+    const f =
+      document
+        .getElementById('photoFile')
+        .files[0];
+
+
+    if(!city || !date || !highlight){
+
+      alert(
+        'Fill city, date and highlight'
+      );
+
+      return;
+    }
+
+
+    if(f){
+
+      const r =
+        new FileReader();
+
+      r.onload = () => {
+
+        store.trips.push({
+
+          city,
+          date,
+          highlight,
+          rating,
+          photo:r.result
+
+        });
+
+        saveStore();
+
+        renderTrips();
+
+        clearTripForm();
+
+        alert('Trip saved');
+
+      };
+
+      r.readAsDataURL(f);
+
+    }
+
+    else{
+
+      store.trips.push({
+
+        city,
+        date,
+        highlight,
+        rating,
+        photo:null
+
+      });
+
+      saveStore();
+
+      renderTrips();
+
+      clearTripForm();
+
+      alert('Trip saved');
+
+    }
+
+  });
+
+
+document
+  .getElementById('clearForm')
+  .addEventListener(
+    'click',
+    clearTripForm
+  );
+
+
+function clearTripForm(){
+
+  [
+    'city',
+    'date',
+    'highlight',
+    'rating',
+    'photoFile'
+  ]
+  .forEach(id => {
+
+    const el =
+      document.getElementById(id);
+
+    if(el){
+      el.value = '';
+    }
+
+  });
+
+}
+
+
+/* =========================================================
+   ITINERARY
+========================================================= */
+
+const knownAttractions = {
+
+  'jaipur':[
+    'Amber Fort',
+    'Hawa Mahal',
+    'Jal Mahal',
+    'City Palace',
+    'Jantar Mantar'
+  ],
+
+  'goa':[
+    'Calangute Beach',
+    'Baga Beach',
+    'Basilica of Bom Jesus',
+    'Fort Aguada',
+    'Dudhsagar Falls'
+  ],
+
+  'new delhi':[
+    'Red Fort',
+    'Qutub Minar',
+    'India Gate',
+    'Lotus Temple',
+    'Humayun\'s Tomb'
+  ],
+
+  'paris':[
+    'Eiffel Tower',
+    'Louvre Museum',
+    'Notre-Dame',
+    'Montmartre',
+    'Champs-Élysées'
+  ]
+
+};
+
+
+function generateItinerary(city, days){
+
+  city =
+    city.toLowerCase();
+
+  const base =
+    knownAttractions[city] || [];
+
+  const attractions =
+    base.length
+      ? base
+      : [
+          city + ' Main Square',
+          'Local Market',
+          'Top Museum',
+          'Popular Park',
+          'Scenic View'
+        ];
+
+
+  const plan = [];
+
+
+  for(
+    let d = 1;
+    d <= days;
+    d++
+  ){
+
+    const items = [];
+
+
+    for(
+      let i = 0;
+      i < Math.min(attractions.length,3);
+      i++
+    ){
+
+      items.push(
+        attractions[
+          (i + d - 1) %
+          attractions.length
+        ]
+      );
+
+    }
+
+
+    plan.push({
+      day:d,
+      items
+    });
+
+  }
+
+
+  return plan;
+
+}
+
+
+document
+  .getElementById('genItinerary')
+  .addEventListener('click', () => {
+
+    const city =
+      document
+        .getElementById('it_city')
+        .value
+        .trim();
+
+    const days =
+      Number(
+        document
+          .getElementById('it_days')
+          .value
+      );
+
+
+    if(!city || !days){
+
+      alert(
+        'Provide city and days'
+      );
+
+      return;
+    }
+
+
+    const plan =
+      generateItinerary(
+        city,
+        days
+      );
+
+
+    document
+      .getElementById('itineraryResult')
+      .innerHTML =
+      plan
+        .map(
+          d =>
+            `Day ${d.day}: ${d.items.join(', ')}`
+        )
+        .join('<br>');
+
+  });
+
+
+document
+  .getElementById('copyIt')
+  .addEventListener('click', () => {
+
+    const text =
+      document
+        .getElementById('itineraryResult')
+        .innerText;
+
+    if(!text){
+
+      alert(
+        'Generate an itinerary first.'
+      );
+
+      return;
+    }
+
+
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+
+        alert('Copied!');
+
+      })
+      .catch(() => {
+
+        alert(
+          'Unable to copy.'
+        );
+
+      });
+
+  });
+
+
+/* =========================================================
+   BUDGET
+========================================================= */
+
+document
+  .getElementById('calcBudget')
+  .addEventListener('click', () => {
+
+    const days =
+      Number(
+        document
+          .getElementById('bp_days')
+          .value
+      ) || 1;
+
+    const style =
+      document
+        .getElementById('bp_style')
+        .value;
+
+
+    let base = 1000;
+
+
+    if(style === 'standard'){
+      base = 2500;
+    }
+
+    else if(style === 'luxury'){
+      base = 5000;
+    }
+
+
+    const est =
+      base * days;
+
+
+    document
+      .getElementById('budgetResult')
+      .innerText =
+      `Estimated budget: ₹${est.toLocaleString()}`;
+
+  });
+
+
+/* =========================================================
+   WEATHER + MAP
+   NO API KEY REQUIRED
+   Uses Open-Meteo
+========================================================= */
+
+let weatherMapInstance = null;
+
+
+async function getWeather(){
+
+  const city =
+    document
+      .getElementById('w_city')
+      .value
+      .trim();
+
+  const out =
+    document
+      .getElementById('weatherResult');
+
+  const mapEl =
+    document
+      .getElementById('weatherMap');
+
+
+  if(!city){
+
+    alert('Enter city');
+
+    return;
+  }
+
+
+  out.innerText =
+    'Fetching weather...';
+
+  mapEl.style.display =
+    'none';
+
+
+  try{
+
+    /* -----------------------------------------
+       STEP 1: CITY SEARCH
+    ----------------------------------------- */
+
+    const geoRes =
+      await fetch(
+
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`
+
+      );
+
+
+    if(!geoRes.ok){
+
+      throw new Error(
+        'Geocoding request failed'
+      );
+
+    }
+
+
+    const geoData =
+      await geoRes.json();
+
+
+    if(
+      !geoData.results ||
+      geoData.results.length === 0
+    ){
+
+      out.innerText =
+        'City not found.';
+
+      return;
+    }
+
+
+    const location =
+      geoData.results[0];
+
+
+    const latitude =
+      location.latitude;
+
+    const longitude =
+      location.longitude;
+
+
+    /* -----------------------------------------
+       STEP 2: WEATHER REQUEST
+    ----------------------------------------- */
+
+    const weatherRes =
+      await fetch(
+
+        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&timezone=auto`
+
+      );
+
+
+    if(!weatherRes.ok){
+
+      throw new Error(
+        'Weather request failed'
+      );
+
+    }
+
+
+    const weatherData =
+      await weatherRes.json();
+
+
+    if(!weatherData.current){
+
+      out.innerText =
+        'Weather data unavailable.';
+
+      return;
+    }
+
+
+    const current =
+      weatherData.current;
+
+
+    /* -----------------------------------------
+       STEP 3: WEATHER DESCRIPTIONS
+    ----------------------------------------- */
+
+    const weatherDescriptions = {
+
+      0:'Clear sky',
+
+      1:'Mainly clear',
+
+      2:'Partly cloudy',
+
+      3:'Overcast',
+
+      45:'Foggy',
+
+      48:'Foggy',
+
+      51:'Light drizzle',
+
+      53:'Moderate drizzle',
+
+      55:'Heavy drizzle',
+
+      61:'Light rain',
+
+      63:'Moderate rain',
+
+      65:'Heavy rain',
+
+      71:'Light snow',
+
+      73:'Moderate snow',
+
+      75:'Heavy snow',
+
+      80:'Rain showers',
+
+      81:'Moderate rain showers',
+
+      82:'Heavy rain showers',
+
+      95:'Thunderstorm',
+
+      96:'Thunderstorm with hail',
+
+      99:'Thunderstorm with heavy hail'
+
+    };
+
+
+    const description =
+      weatherDescriptions[
+        current.weather_code
+      ] ||
+      'Weather available';
+
+
+    /* -----------------------------------------
+       STEP 4: DISPLAY WEATHER
+    ----------------------------------------- */
+
+    out.innerHTML = `
+
+      <strong>
+        ${location.name}
+      </strong>
+
+      ${location.country
+        ? `, ${location.country}`
+        : ''}
+
+      <br>
+
+      ${description}
+
+      · Temp:
+      ${current.temperature_2m}°C
+
+      · Humidity:
+      ${current.relative_humidity_2m}%
+
+      · Wind:
+      ${current.wind_speed_10m} km/h
+
+    `;
+
+
+    /* -----------------------------------------
+       STEP 5: REMOVE OLD MAP
+    ----------------------------------------- */
+
+    if(weatherMapInstance){
+
+      try{
+
+        weatherMapInstance.remove();
+
+      }
+
+      catch(e){
+
+        console.log(
+          'Previous map cleanup error:',
+          e
+        );
+
+      }
+
+      weatherMapInstance =
+        null;
+
+    }
+
+
+    /* -----------------------------------------
+       STEP 6: DISPLAY MAP
+    ----------------------------------------- */
+
+    mapEl.style.display =
+      'block';
+
+    mapEl.style.height =
+      '300px';
+
+
+    weatherMapInstance =
+      L.map('weatherMap')
+       .setView(
+         [latitude,longitude],
+         12
+       );
+
+
+    /* OpenStreetMap */
+
+    L.tileLayer(
+
+      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+
+      {
+        maxZoom:19,
+
+        attribution:
+          '&copy; OpenStreetMap contributors'
+      }
+
+    ).addTo(
+      weatherMapInstance
+    );
+
+
+    /* Location marker */
+
+    L.marker(
+      [latitude,longitude]
+    )
+    .addTo(
+      weatherMapInstance
+    )
+    .bindPopup(
+
+      `${location.name}: ${description}`
+
+    )
+    .openPopup();
+
+
+  }
+
+  catch(error){
+
+    console.error(
+      'Weather Error:',
+      error
+    );
+
+    out.innerText =
+      'Error fetching weather. Please try again.';
+
+    mapEl.style.display =
+      'none';
+
+  }
+
+}
+
+
+/* Get Weather Button */
+
+document
+  .getElementById('getWeather')
+  .addEventListener(
+    'click',
+    getWeather
+  );
+
+
+/* Open Google Maps */
+
+document
+  .getElementById('showMapBtn')
+  .addEventListener('click', () => {
+
+    const city =
+      document
+        .getElementById('w_city')
+        .value
+        .trim();
+
+
+    if(!city){
+
+      alert('Enter city');
+
+      return;
+    }
+
+
+    window.open(
+
+      `https://www.google.com/maps/search/${encodeURIComponent(city)}`,
+
+      '_blank'
+
+    );
+
+  });
+
+
+/* =========================================================
+   LIVE TRACKER
+========================================================= */
+
+let tracker = null;
+
+
+document
+  .getElementById('startTrack')
+  .addEventListener('click', () => {
+
+    if(!navigator.geolocation){
+
+      alert(
+        'Geolocation not supported'
+      );
+
+      return;
+    }
+
+
+    tracker =
+      navigator.geolocation.watchPosition(
+
+        pos => {
+
+          document
+            .getElementById('trackerStatus')
+            .innerText =
+
+            `Lat: ${pos.coords.latitude.toFixed(5)},
+             Lon: ${pos.coords.longitude.toFixed(5)}`;
+
+        },
+
+        err => {
+
+          console.error(
+            'Location error:',
+            err
+          );
+
+          document
+            .getElementById('trackerStatus')
+            .innerText =
+            'Unable to access location.';
+
+        },
+
+        {
+          enableHighAccuracy:true
+        }
+
+      );
+
+  });
+
+
+document
+  .getElementById('stopTrack')
+  .addEventListener('click', () => {
+
+    if(tracker){
+
+      navigator.geolocation
+        .clearWatch(tracker);
+
+    }
+
+    tracker = null;
+
+    document
+      .getElementById('trackerStatus')
+      .innerText =
+      'Tracker stopped.';
+
+  });
+
+
+/* =========================================================
+   DOCUMENT VAULT
+========================================================= */
+
+document
+  .getElementById('docUpload')
+  .addEventListener('change', e => {
+
+    const f =
+      e.target.files[0];
+
+    if(!f){
+      return;
+    }
+
+
+    const r =
+      new FileReader();
+
+
+    r.onload = () => {
+
+      store.docs.push({
+
+        name:f.name,
+        data:r.result
+
+      });
+
+
+      saveStore();
+
+      renderDocs();
+
+      alert(
+        'Document saved'
+      );
+
+    };
+
+
+    r.readAsDataURL(f);
+
+  });
+
+
+function renderDocs(){
+
+  const el =
+    document
+      .getElementById('docsList');
+
+  el.innerHTML = '';
+
+
+  if(store.docs.length === 0){
+
+    el.innerText =
+      'No documents.';
+
+    return;
+  }
+
+
+  store.docs
+    .slice()
+    .reverse()
+    .forEach((d,i) => {
+
+      const div =
+        document.createElement('div');
+
+      div.className =
+        'docItem';
+
+
+      div.innerHTML = `
+
+        ${d.name}
+
+        <a
+          href="${d.data}"
+          target="_blank"
+          style="color:#0b1530">
+          View
+        </a>
+
+        <button
+          class="btn secondary"
+          style="margin-left:8px"
+          onclick="(function(){
+
+            store.docs.splice(${i},1);
+
+            saveStore();
+
+            renderDocs();
+
+          })()">
+
+          Delete
+
+        </button>
+
+      `;
+
+
+      el.appendChild(div);
+
+    });
+
+}
+
+
+/* =========================================================
+   PACKING ASSISTANT
+========================================================= */
+
+document
+  .getElementById('getPacking')
+  .addEventListener('click', () => {
+
+    const days =
+      Number(
+        document
+          .getElementById('pack_days')
+          .value
+      ) || 1;
+
+
+    const items = [
+
+      'Shirts',
+      'Trousers',
+      'Underwear',
+      'Shoes',
+      'Socks',
+      'Jacket',
+      'Toiletries',
+      'Phone Charger',
+      'Medications',
+      'Hat',
+      'Sunglasses'
+
+    ];
+
+
+    if(days > 7){
+
+      items.push(
+        'Extra Clothes'
+      );
+
+    }
+
+
+    document
+      .getElementById('packingResult')
+      .innerHTML =
+      items.join(', ');
+
+  });
+
+
+document
+  .getElementById('clearPacking')
+  .addEventListener('click', () => {
+
+    document
+      .getElementById('packingResult')
+      .innerHTML = '';
+
+    document
+      .getElementById('pack_days')
+      .value = '';
+
+  });
+
+
+/* =========================================================
+   SAFETY SCORE
+========================================================= */
+
+document
+  .getElementById('calcSafety')
+  .addEventListener('click', () => {
+
+    const city =
+      document
+        .getElementById('s_city')
+        .value
+        .trim();
+
+
+    if(!city){
+
+      alert(
+        'Enter city'
+      );
+
+      return;
+    }
+
+
+    if(store.safety[city]){
+
+      document
+        .getElementById('safetyResult')
+        .innerText =
+
+        `Safety score for ${city}: ${store.safety[city]}/100 (cached)`;
+
+      return;
+
+    }
+
+
+    const score =
+      Math.floor(
+        Math.random() * 41
+      ) + 60;
+
+
+    store.safety[city] =
+      score;
+
+    saveStore();
+
+
+    document
+      .getElementById('safetyResult')
+      .innerText =
+
+      `Safety score for ${city}: ${score}/100`;
+
+  });
+
+
+/* =========================================================
+   LOCAL AI ASSISTANT
+========================================================= */
+
+function sarcasm(text){
+
+  const snark = [
+
+    'Noted. Also, try not to lose your luggage this time.',
+
+    'Sure — because winging it worked so well before.',
+
+    'Smarter than most tourists. Only slightly.',
+
+    "Right away. I'll pretend this was easy."
+
+  ];
+
+
+  return (
+
+    text +
+    ' — ' +
+    snark[
+      Math.floor(
+        Math.random() *
+        snark.length
+      )
+    ]
+
+  );
+
+}
+
+
+function aiReplyFor(m0){
+
+  const m =
+    (m0 || '')
+      .toLowerCase();
+
+
+  if(!m){
+
+    return sarcasm(
+      'Say something useful, please.'
+    );
+
+  }
+
+
+  /* PACKING */
+
+  if(
+    m.includes('pack') ||
+    m.includes('packing')
+  ){
+
+    let items = [
+
+      'Clothes',
+      'Underwear',
+      'Shoes',
+      'Toiletries',
+      'Phone & Charger',
+      'Power bank',
+      'Important meds',
+      'Passport/ID'
+
+    ];
+
+
+    if(
+      m.includes('cold') ||
+      m.includes('winter')
+    ){
+
+      items.push(
+        'Warm jacket',
+        'Thermals'
+      );
+
+    }
+
+
+    if(
+      m.includes('beach') ||
+      m.includes('swim')
+    ){
+
+      items.push(
+        'Swimwear',
+        'Sunscreen',
+        'Towel'
+      );
+
+    }
+
+
+    return sarcasm(
+      `Packing tip: ${items.join(', ')}`
+    );
+
+  }
+
+
+  /* ITINERARY */
+
+  if(
+    m.includes('itinerary') ||
+    m.includes('plan') ||
+    m.match(/\d+\s*days/)
+  ){
+
+    const daysMatch =
+      m.match(
+        /(\d+)\s*days?/
+      );
+
+
+    const days =
+      daysMatch
+        ? Number(daysMatch[1])
+        : 3;
+
+
+    const plan = [];
+
+
+    for(
+      let d = 1;
+      d <= days;
+      d++
+    ){
+
+      plan.push(
+        `Day ${d}: Top attractions + local food`
+      );
+
+    }
+
+
+    return sarcasm(
+
+      `Starter ${days}-day itinerary: ${plan.join(' | ')}`
+
+    );
+
+  }
+
+
+  /* BUDGET */
+
+  if(
+    m.includes('budget') ||
+    m.includes('cost') ||
+    m.includes('money')
+  ){
+
+    const style =
+      m.includes('lux') ||
+      m.includes('expens')
+
+        ? 'luxury'
+
+        : (
+            m.includes('cheap') ||
+            m.includes('budget')
+          )
+
+          ? 'budget'
+
+          : 'standard';
+
+
+    const perDay =
+      style === 'luxury'
+        ? 5000
+        : style === 'budget'
+          ? 1000
+          : 2500;
+
+
+    return sarcasm(
+
+      `Estimate (${style}): approx ₹${perDay} per day. Multiply by days and plan accordingly.`
+
+    );
+
+  }
+
+
+  /* HOTEL */
+
+  if(
+    m.includes('hotel') ||
+    m.includes('rent') ||
+    m.includes('stay')
+  ){
+
+    return sarcasm(
+
+      "Check guest photos, rating, distance and reviews before booking."
+
+    );
+
+  }
+
+
+  /* WEATHER */
+
+  if(
+    m.includes('weather')
+  ){
+
+    return sarcasm(
+
+      'Type a city in the Weather & Map box to check current weather.'
+
+    );
+
+  }
+
+
+  /* SAFETY */
+
+  if(
+    m.includes('safety')
+  ){
+
+    return sarcasm(
+
+      'Stick to well-lit areas, keep important documents secure and use trusted transport.'
+
+    );
+
+  }
+
+
+  return sarcasm(
+
+    "I can help with packing, itineraries, budgets, hotels and travel planning. Try: 'packing 5 days beach', 'itinerary 3 days paris', or 'budget 7 days standard'."
+
+  );
+
+}
+
+
+function appendChat(
+  who,
+  text,
+  isBot
+){
+
+  const win =
+    document
+      .getElementById('chatWindow');
+
+
+  const d =
+    document
+      .createElement('div');
+
+
+  d.className =
+    'msg ' +
+    (
+      isBot
+        ? 'aiBot'
+        : 'aiUser'
+    );
+
+
+  d.style.whiteSpace =
+    'pre-wrap';
+
+
+  d.innerHTML = `
+
+    <strong>
+      ${who}:
+    </strong>
+
+    ${text}
+
+  `;
+
+
+  win.appendChild(d);
+
+
+  win.scrollTop =
+    win.scrollHeight;
+
+}
+
+
+document
+  .getElementById('sendChat')
+  .addEventListener('click', () => {
+
+    const inp =
+      document
+        .getElementById('chatInput');
+
+
+    const text =
+      inp.value.trim();
+
+
+    if(!text){
+      return;
+    }
+
+
+    appendChat(
+      'You',
+      text,
+      false
+    );
+
+
+    inp.value = '';
+
+
+    appendChat(
+      'AI',
+      'Thinking…',
+      true
+    );
+
+
+    setTimeout(() => {
+
+      const win =
+        document
+          .getElementById('chatWindow');
+
+
+      if(
+        win &&
+        win.lastChild
+      ){
+
+        win.removeChild(
+          win.lastChild
+        );
+
+      }
+
+
+      appendChat(
+        'AI',
+        aiReplyFor(text),
+        true
+      );
+
+    },600 + Math.random()*800);
+
+  });
+
+
+/* =========================================================
+   GUIDE / JOBS
+========================================================= */
+
+document
+  .getElementById('postHire')
+  .addEventListener('click', () => {
+
+    const t =
+      document
+        .getElementById('hireTitle')
+        .value
+        .trim();
+
+
+    const d =
+      document
+        .getElementById('hireDesc')
+        .value
+        .trim();
+
+
+    if(!t || !d){
+
+      alert(
+        'Fill fields'
+      );
+
+      return;
+    }
+
+
+    store.jobs.push({
+
+      title:t,
+      desc:d
+
+    });
+
+
+    saveStore();
+
+    renderJobs();
+
+
+    document
+      .getElementById('hireTitle')
+      .value = '';
+
+
+    document
+      .getElementById('hireDesc')
+      .value = '';
+
+  });
+
+
+function renderJobs(){
+
+  const box =
+    document
+      .getElementById('hireList');
+
+
+  box.innerHTML = '';
+
+
+  if(!store.jobs.length){
+
+    box.innerText =
+      'No jobs posted yet.';
+
+    return;
+
+  }
+
+
+  store.jobs
+    .slice()
+    .reverse()
+    .forEach(j => {
+
+      const div =
+        document
+          .createElement('div');
+
+
+      div.className =
+        'note';
+
+
+      div.innerHTML = `
+
+        <strong>
+          ${j.title}
+        </strong>
+
+        — ${j.desc}
+
+      `;
+
+
+      box.appendChild(div);
+
+    });
+
+}
+
+
+renderJobs();
+
+
+/* APPLY FOR JOB */
+
+document
+  .getElementById('applyBtn')
+  .addEventListener('click', () => {
+
+    const name =
+      document
+        .getElementById('applyName')
+        .value
+        .trim();
+
+
+    const job =
+      document
+        .getElementById('applyJob')
+        .value
+        .trim();
+
+
+    if(!name || !job){
+
+      alert(
+        'Fill fields'
+      );
+
+      return;
+    }
+
+
+    store.applications.push({
+
+      name,
+      job
+
+    });
+
+
+    saveStore();
+
+
+    document
+      .getElementById('applyList')
+      .innerHTML +=
+
+      `${name} applied for ${job}<br>`;
+
+
+    document
+      .getElementById('applyName')
+      .value = '';
+
+
+    document
+      .getElementById('applyJob')
+      .value = '';
+
+  });
+
+
+/* =========================================================
+   PROFILE
+========================================================= */
+
+document
+  .getElementById('saveProfile')
+  .addEventListener('click', () => {
+
+    const name =
+      document
+        .getElementById('profileName')
+        .value
+        .trim();
+
+
+    const email =
+      document
+        .getElementById('profileEmail')
+        .value
+        .trim();
+
+
+    const f =
+      document
+        .getElementById('profileFile')
+        .files[0];
+
+
+    if(!name || !email){
+
+      alert(
+        'Fill name & email'
+      );
+
+      return;
+    }
+
+
+    if(f){
+
+      const r =
+        new FileReader();
+
+
+      r.onload = () => {
+
+        store.profile = {
+
+          name,
+          email,
+          photo:r.result
+
+        };
+
+
+        saveStore();
+
+        renderProfile();
+
+
+        alert(
+          'Profile saved'
+        );
+
+
+        document
+          .getElementById('profileFile')
+          .value = '';
+
+      };
+
+
+      r.readAsDataURL(f);
+
+    }
+
+    else{
+
+      store.profile = {
+
+        name,
+        email,
+        photo:
+          store.profile.photo ||
+          null
+
+      };
+
+
+      saveStore();
+
+      renderProfile();
+
+
+      alert(
+        'Profile saved'
+      );
+
+    }
+
+  });
+
+
+function renderProfile(){
+
+  if(
+    store.profile &&
+    store.profile.name
+  ){
+
+    document
+      .getElementById('profileInfo')
+      .innerText =
+
+      `Name: ${store.profile.name}, Email: ${store.profile.email}`;
+
+
+    if(store.profile.photo){
+
+      document
+        .getElementById('profilePic')
+        .src =
+        store.profile.photo;
+
+    }
+
+  }
+
+}
+
+
+renderProfile();
+
+
+/* =========================================================
+   INITIAL RENDER
+========================================================= */
+
+renderDocs();
+
+renderTrips();
+
+renderHomeQuick();
+
+</script>
+
+</body>
+</html>
